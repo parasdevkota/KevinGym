@@ -3,7 +3,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const path = require('path');
-const connectDB = require('./config/db');
+const Database = require('./config/db');
 
 dotenv.config();
 
@@ -21,7 +21,7 @@ app.get('*', (req, res) => res.sendFile(path.join(__dirname, '../frontend/build/
 
 // Export the app object for testing
 if (require.main === module) {
-    connectDB();
+    Database.getInstance().connect();
     // If the file is run directly, start the server
     const PORT = process.env.PORT || 6001;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
