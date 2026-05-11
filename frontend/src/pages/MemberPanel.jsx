@@ -3,15 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../axiosConfig';
 
-const BOOKED_CLASSES = [
-  { id: 'CLS-101', classroom: 'Studio A',  time: 'Mar 24 · 7:00 AM'  },
-  { id: 'CLS-204', classroom: 'Studio B',  time: 'Mar 25 · 6:30 PM'  },
-  { id: 'CLS-089', classroom: 'Spin Room', time: 'Mar 26 · 8:00 AM'  },
-  { id: 'CLS-317', classroom: 'Studio A',  time: 'Mar 28 · 12:00 PM' },
-  { id: 'CLS-142', classroom: 'Studio C',  time: 'Mar 29 · 9:00 AM'  },
-  { id: 'CLS-256', classroom: 'Yoga Loft', time: 'Mar 30 · 6:00 AM'  },
-];
-
 const INITIAL_NOTIFICATIONS = [
   { id: 'MSG-001', content: 'Your booking for CLS-101 is confirmed.' },
   { id: 'MSG-002', content: 'Reminder: Power Yoga tomorrow at 7:00 AM.' },
@@ -21,6 +12,12 @@ const INITIAL_NOTIFICATIONS = [
   { id: 'MSG-006', content: "Kevin's Gym will be closed on Apr 1 (holiday)." },
 ];
 
+const formatTime = (iso) => {
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
+    ' · ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+};
+
 const MemberPanel = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -29,18 +26,22 @@ const MemberPanel = () => {
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const [bookings, setBookings] = useState([]);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [bookingsLoading, setBookingsLoading] = useState(false);
+
   const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
   const [selectedNotif, setSelectedNotif] = useState(null);
   const [flaggedNotifs, setFlaggedNotifs] = useState(new Set());
+
+  const authHeader = { headers: { Authorization: `Bearer ${user?.token}` } };
 
   useEffect(() => {
     const fetchProfile = async () => {
       setLoading(true);
       try {
-        const response = await axiosInstance.get('/api/auth/profile', {
-          headers: { Authorization: `Bearer ${user.token}` },
-        });
-        setProfile({ name: response.data.name, email: response.data.email });
+        const res = await axiosInstance.get('/api/auth/profile', authHeader);
+        setProfile({ name: res.data.name, email: res.data.email });
       } catch {
         alert('Failed to fetch profile.');
       } finally {
@@ -50,18 +51,49 @@ const MemberPanel = () => {
     if (user) fetchProfile();
   }, [user]);
 
+  useEffect(() => {
+    const fetchBookings = async () => {
+      setBookingsLoading(true);
+      try {
+        const res = await axiosInstance.get('/api/bookings', authHeader);
+        setBookings(res.data);
+      } catch {
+        alert('Failed to fetch bookings.');
+      } finally {
+        setBookingsLoading(false);
+      }
+    };
+    if (user) fetchBookings();
+  }, [user]);
+
   const handleSave = async () => {
     setLoading(true);
     try {
-      await axiosInstance.put('/api/auth/profile', profile, {
-        headers: { Authorization: `Bearer ${user.token}` },
-      });
+      await axiosInstance.put('/api/auth/profile', profile, authHeader);
       setEditing(false);
     } catch {
       alert('Failed to update profile.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCancelBooking = async () => {
+    if (selectedBooking === null) return;
+    const booking = bookings[selectedBooking];
+    try {
+      await axiosInstance.delete(`/api/bookings/${booking._id}`, authHeader);
+      setBookings(bookings.filter((_, i) => i !== selectedBooking));
+      setSelectedBooking(null);
+    } catch {
+      alert('Failed to cancel booking.');
+    }
+  };
+
+  const handleReschedule = () => {
+    if (selectedBooking === null) return;
+    const booking = bookings[selectedBooking];
+    navigate(`/class-booking?reschedule=${booking._id}`);
   };
 
   const [firstName, ...lastParts] = (profile.name || '').split(' ');
@@ -156,29 +188,48 @@ const MemberPanel = () => {
           <div className="bg-gray-100 border-b border-gray-300 px-4 py-2 text-sm font-medium text-gray-700">
             Booked Classes
           </div>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-left px-4 py-2 font-semibold text-gray-700">Class ID</th>
-                <th className="text-left px-4 py-2 font-semibold text-gray-700">Classroom</th>
-                <th className="text-left px-4 py-2 font-semibold text-gray-700">Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              {BOOKED_CLASSES.map((cls, i) => (
-                <tr key={cls.id} className={i % 2 === 1 ? 'bg-gray-50' : ''}>
-                  <td className="px-4 py-2 text-gray-600">{cls.id}</td>
-                  <td className="px-4 py-2 text-gray-600">{cls.classroom}</td>
-                  <td className="px-4 py-2 text-gray-600">{cls.time}</td>
+          {bookingsLoading ? (
+            <div className="p-4 text-sm text-gray-500">Loading...</div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="text-left px-4 py-2 font-semibold text-gray-700">Class ID</th>
+                  <th className="text-left px-4 py-2 font-semibold text-gray-700">Classroom</th>
+                  <th className="text-left px-4 py-2 font-semibold text-gray-700">Time</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {bookings.map((b, i) => (
+                  <tr
+                    key={b._id}
+                    onClick={() => setSelectedBooking(i === selectedBooking ? null : i)}
+                    className={`cursor-pointer ${selectedBooking === i ? 'bg-green-50' : i % 2 === 1 ? 'bg-gray-50' : ''} hover:bg-green-50`}
+                  >
+                    <td className="px-4 py-2 text-gray-600">{b.classId}</td>
+                    <td className="px-4 py-2 text-gray-600">{b.classroom}</td>
+                    <td className="px-4 py-2 text-gray-600">{formatTime(b.scheduledAt)}</td>
+                  </tr>
+                ))}
+                {bookings.length === 0 && (
+                  <tr><td colSpan={3} className="px-4 py-4 text-center text-gray-400 text-sm">No bookings yet</td></tr>
+                )}
+              </tbody>
+            </table>
+          )}
           <div className="flex gap-2 p-4 border-t border-gray-200">
-            <button className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50">
+            <button
+              onClick={handleReschedule}
+              disabled={selectedBooking === null}
+              className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
               Reschedule
             </button>
-            <button className="px-4 py-1.5 border border-red-400 rounded text-sm text-red-500 hover:bg-red-50">
+            <button
+              onClick={handleCancelBooking}
+              disabled={selectedBooking === null}
+              className="px-4 py-1.5 border border-red-400 rounded text-sm text-red-500 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
               Cancel Booking
             </button>
             <button

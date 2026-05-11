@@ -14,6 +14,8 @@ app.use(cors());
 app.use(express.json());
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/classes', require('./routes/classRoutes'));
+app.use('/api/bookings', require('./routes/bookingRoutes'));
 //app.use('/api/tasks', require('./routes/taskRoutes'));
 
 app.use(express.static(path.join(__dirname, '../frontend/build')));
