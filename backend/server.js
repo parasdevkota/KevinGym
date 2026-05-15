@@ -4,6 +4,8 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const path = require('path');
 const Database = require('./config/db');
+const LoggerObserver = require('./observers/LoggerObserver');
+const NotificationObserver = require('./observers/NotificationObserver');
 
 dotenv.config();
 
@@ -14,6 +16,11 @@ app.use(cors());
 app.use(express.json());
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
+app.use('/api/courses', require('./routes/courseRoutes'));
+
+new LoggerObserver();
+new NotificationObserver();
 //app.use('/api/tasks', require('./routes/taskRoutes'));
 
 app.use(express.static(path.join(__dirname, '../frontend/build')));

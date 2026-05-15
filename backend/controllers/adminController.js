@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const gymEvents = require('../events/gymEvents');
 
 const getUsers = async (req, res) => {
   try {
@@ -17,6 +18,7 @@ const createUser = async (req, res) => {
 
     const name = `${firstName} ${lastName}`.trim();
     const user = await User.create({ name, email, password: 'GymMember123', role: role || 'member' });
+    gymEvents.emit('userCreated', { name: user.name, email: user.email, role: user.role });
     res.status(201).json({ id: user.id, name: user.name, email: user.email, role: user.role });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -34,6 +36,7 @@ const updateUser = async (req, res) => {
     user.role = role || user.role;
 
     const updated = await user.save();
+    gymEvents.emit('userUpdated', { name: updated.name, email: updated.email });
     res.json({ id: updated.id, name: updated.name, email: updated.email, role: updated.role });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -44,6 +47,7 @@ const deleteUser = async (req, res) => {
   try {
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
+    gymEvents.emit('userDeleted', { id: req.params.id });
     res.json({ message: 'User deleted' });
   } catch (error) {
     res.status(500).json({ message: error.message });

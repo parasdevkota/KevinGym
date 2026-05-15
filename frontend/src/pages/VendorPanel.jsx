@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axiosInstance from '../axiosConfig';
+import { useAuth } from '../context/AuthContext';
 
 const PUBLISHED_COURSES = [
   { course: 'Power Yoga',         schedule: 'Mon / Wed', time: '7:00 AM'  },
@@ -21,6 +23,7 @@ const INITIAL_NOTIFICATIONS = [
 const STUDIOS = ['Happy Yoga Studio', 'Studio A', 'Studio B', 'Spin Room', 'Yoga Loft'];
 
 const VendorPanel = () => {
+  const { user } = useAuth();
   const [form, setForm] = useState({ course: '', date: '', time: '', description: '', studio: STUDIOS[0] });
   const [courses, setCourses] = useState(PUBLISHED_COURSES);
   const [selected, setSelected] = useState(null);
@@ -29,10 +32,35 @@ const VendorPanel = () => {
   const [selectedNotif, setSelectedNotif] = useState(null);
   const [flaggedNotifs, setFlaggedNotifs] = useState(new Set());
 
-  const handleCreate = () => {
+  useEffect(() => {
+    axiosInstance.get('/api/notifications', {
+      headers: { Authorization: `Bearer ${user?.token}` },
+    }).then(res => {
+      const fetched = res.data.map(n => ({
+        message: n.message,
+        date: new Date(n.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      }));
+      setNotifications(fetched);
+    }).catch(() => {});
+  }, [user]);
+
+  const handleCreate = async () => {
     if (!form.course || !form.date) return;
-    setCourses([...courses, { course: form.course, schedule: form.date, time: form.time || '—' }]);
-    setForm({ course: '', date: '', time: '', description: '', studio: STUDIOS[0] });
+    try {
+      await axiosInstance.post('/api/courses', {
+        name: form.course,
+        schedule: form.date,
+        time: form.time,
+        description: form.description,
+        studio: form.studio,
+      }, {
+        headers: { Authorization: `Bearer ${user?.token}` },
+      });
+      setCourses([...courses, { course: form.course, schedule: form.date, time: form.time || '—' }]);
+      setForm({ course: '', date: '', time: '', description: '', studio: STUDIOS[0] });
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to create course.');
+    }
   };
 
   const handleSave = () => {
