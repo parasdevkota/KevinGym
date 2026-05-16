@@ -282,8 +282,7 @@ const AdminDashboard = () => {
                     alert('Failed to delete notification.');
                   }
                 }}
-                disabled={!selectedNotif}
-                className="px-4 py-1.5 border border-red-400 rounded text-sm text-red-500 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-4 py-1.5 border border-red-400 rounded text-sm text-red-500 hover:bg-red-50"
               >
                 Delete
               </button>
