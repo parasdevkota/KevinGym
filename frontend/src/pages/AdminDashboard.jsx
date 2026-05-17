@@ -163,7 +163,7 @@ const AdminDashboard = () => {
                 <tr
                   key={u._id}
                   onClick={() => handleSelectForEdit(u)}
-                  className={`cursor-pointer ${selected?._id === u._id ? 'bg-green-50' : i % 2 === 1 ? 'bg-gray-50' : ''} hover:bg-green-50`}
+                  className={`cursor-pointer ${selected?._id === u._id ? 'bg-orange-100' : i % 2 === 1 ? 'bg-gray-50' : ''} hover:bg-orange-50`}
                 >
                   <td className="px-4 py-2 text-gray-600">{u.name}</td>
                   <td className="px-4 py-2 text-gray-600">{u.email}</td>
@@ -251,7 +251,7 @@ const AdminDashboard = () => {
                   <tr
                     key={n._id}
                     onClick={() => setSelectedNotif(n._id === selectedNotif ? null : n._id)}
-                    className={`cursor-pointer ${selectedNotif === n._id ? 'bg-green-50' : i % 2 === 1 ? 'bg-gray-50' : ''} hover:bg-green-50`}
+                    className={`cursor-pointer ${selectedNotif === n._id ? 'bg-orange-100' : i % 2 === 1 ? 'bg-gray-50' : ''} hover:bg-orange-50`}
                   >
                     <td className="px-4 py-2 text-gray-600">{n.message}</td>
                     <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{formatDate(n.createdAt)}</td>

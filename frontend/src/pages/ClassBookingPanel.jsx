@@ -126,7 +126,7 @@ const ClassBookingPanel = () => {
                   <tr
                     key={b._id}
                     onClick={() => setSelectedBooked(i === selectedBooked ? null : i)}
-                    className={`cursor-pointer ${selectedBooked === i ? 'bg-green-50' : i % 2 === 1 ? 'bg-gray-50' : ''} hover:bg-green-50`}
+                    className={`cursor-pointer ${selectedBooked === i ? 'bg-orange-100' : i % 2 === 1 ? 'bg-gray-50' : ''} hover:bg-orange-50`}
                   >
                     <td className="px-4 py-2 text-teal-600">{b.classId}</td>
                     <td className="px-4 py-2 text-teal-600">{getCourseName(b.classId, b.name)}</td>
@@ -179,7 +179,7 @@ const ClassBookingPanel = () => {
                   <tr
                     key={c._id}
                     onClick={() => setSelectedAvailable(origIdx === selectedAvailable ? null : origIdx)}
-                    className={`cursor-pointer ${selectedAvailable === origIdx ? 'bg-green-50' : i % 2 === 1 ? 'bg-gray-50' : ''} hover:bg-green-50`}
+                    className={`cursor-pointer ${selectedAvailable === origIdx ? 'bg-orange-100' : i % 2 === 1 ? 'bg-gray-50' : ''} hover:bg-orange-50`}
                   >
                     <td className="px-4 py-2 text-teal-600">{c.classId}</td>
                     <td className="px-4 py-2 text-teal-600">{getCourseName(c.classId, c.name)}</td>

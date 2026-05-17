@@ -212,7 +212,7 @@ const MemberPanel = () => {
                   <tr
                     key={b._id}
                     onClick={() => setSelectedBooking(i === selectedBooking ? null : i)}
-                    className={`cursor-pointer ${selectedBooking === i ? 'bg-green-50' : i % 2 === 1 ? 'bg-gray-50' : ''} hover:bg-green-50`}
+                    className={`cursor-pointer ${selectedBooking === i ? 'bg-orange-100' : i % 2 === 1 ? 'bg-gray-50' : ''} hover:bg-orange-50`}
                   >
                     <td className="px-4 py-2 text-teal-600">{b.classId}</td>
                     <td className="px-4 py-2 text-teal-600">{getCourseName(b.classId, b.name)}</td>
@@ -264,9 +264,9 @@ const MemberPanel = () => {
               {notifications.map((msg, i) => {
                 const isSelected = selectedNotif === i;
                 const isFlagged = flaggedNotifs.has(i);
-                const rowClass = isSelected ? 'bg-blue-50' : i % 2 === 1 ? 'bg-gray-50' : '';
+                const rowClass = isSelected ? 'bg-orange-100' : i % 2 === 1 ? 'bg-gray-50' : '';
                 return (
-                  <tr key={msg.id} onClick={() => setSelectedNotif(i)} className={`cursor-pointer ${rowClass} hover:bg-blue-50`}>
+                  <tr key={msg.id} onClick={() => setSelectedNotif(i)} className={`cursor-pointer ${rowClass} hover:bg-orange-50`}>
                     <td className="px-4 py-2 whitespace-nowrap text-gray-600">{msg.id}</td>
                     <td className="px-4 py-2 text-gray-600">
                       <span className="flex items-center justify-between">

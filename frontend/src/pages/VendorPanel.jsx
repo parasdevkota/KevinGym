@@ -170,7 +170,7 @@ const VendorPanel = () => {
                 <tr
                   key={i}
                   onClick={() => handleSelectForEdit(i)}
-                  className={`cursor-pointer ${selected === i ? 'bg-green-50' : i % 2 === 1 ? 'bg-gray-50' : ''} hover:bg-green-50`}
+                  className={`cursor-pointer ${selected === i ? 'bg-orange-100' : i % 2 === 1 ? 'bg-gray-50' : ''} hover:bg-orange-50`}
                 >
                   <td className="px-4 py-2 text-gray-600">{c.course}</td>
                   <td className="px-4 py-2 text-gray-600">{c.schedule}</td>
@@ -209,9 +209,9 @@ const VendorPanel = () => {
               {notifications.map((n, i) => {
                 const isSelected = selectedNotif === i;
                 const isFlagged = flaggedNotifs.has(i);
-                const rowClass = isSelected ? 'bg-blue-50' : isFlagged ? 'bg-yellow-50' : i % 2 === 1 ? 'bg-gray-50' : '';
+                const rowClass = isSelected ? 'bg-orange-100' : isFlagged ? 'bg-yellow-50' : i % 2 === 1 ? 'bg-gray-50' : '';
                 return (
-                  <tr key={i} onClick={() => setSelectedNotif(i)} className={`cursor-pointer ${rowClass} hover:bg-blue-50`}>
+                  <tr key={i} onClick={() => setSelectedNotif(i)} className={`cursor-pointer ${rowClass} hover:bg-orange-50`}>
                     <td className={`px-4 py-2 ${isFlagged ? 'font-medium text-yellow-800' : 'text-gray-600'}`}>{n.message}</td>
                     <td className={`px-4 py-2 whitespace-nowrap ${isFlagged ? 'font-medium text-yellow-800' : 'text-gray-600'}`}>{n.date}</td>
                   </tr>
