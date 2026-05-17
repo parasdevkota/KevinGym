@@ -12,12 +12,12 @@ const PUBLISHED_COURSES = [
 ];
 
 const INITIAL_NOTIFICATIONS = [
-  { message: 'Power Yoga booking confirmed: Sarah Mitchell', date: 'Mar 23' },
-  { message: 'Class cancelled by member: James Thornton',   date: 'Mar 23' },
-  { message: 'New review posted for Vinyasa Flow',          date: 'Mar 22' },
-  { message: 'Schedule conflict flagged: Wed 9:00 AM',      date: 'Mar 22' },
-  { message: 'Admin approved: Morning Meditation listing',  date: 'Mar 21' },
-  { message: 'Payout processed: $340.00',                   date: 'Mar 20' },
+  { datetime: 'Mar 23 · 9:00 AM',  content: 'Power Yoga booking confirmed: Sarah Mitchell' },
+  { datetime: 'Mar 23 · 11:30 AM', content: 'Class cancelled by member: James Thornton'   },
+  { datetime: 'Mar 22 · 2:00 PM',  content: 'New review posted for Vinyasa Flow'          },
+  { datetime: 'Mar 22 · 4:15 PM',  content: 'Schedule conflict flagged: Wed 9:00 AM'      },
+  { datetime: 'Mar 21 · 10:00 AM', content: 'Admin approved: Morning Meditation listing'  },
+  { datetime: 'Mar 20 · 3:00 PM',  content: 'Payout processed: $340.00'                   },
 ];
 
 const STUDIOS = ['Happy Yoga Studio', 'Studio A', 'Studio B', 'Spin Room', 'Yoga Loft'];
@@ -33,12 +33,13 @@ const VendorPanel = () => {
   const [flaggedNotifs, setFlaggedNotifs] = useState(new Set());
 
   useEffect(() => {
-    axiosInstance.get('/api/notifications', {
+    axiosInstance.get('/api/notifications?target=vendors', {
       headers: { Authorization: `Bearer ${user?.token}` },
     }).then(res => {
       const fetched = res.data.map(n => ({
-        message: n.message,
-        date: new Date(n.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        datetime: new Date(n.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
+          ' · ' + new Date(n.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+        content: n.message,
       }));
       setNotifications(fetched);
     }).catch(() => {});
@@ -64,19 +65,19 @@ const VendorPanel = () => {
   };
 
   const handleSave = () => {
-    if (!selected) return;
-    setCourses(courses.map((c, i) => i === selected ? { ...c, course: form.course, schedule: form.date, time: form.time } : c));
+    if (selected === null) return;
+    setCourses(courses.map((c, i) => i === selected ? { ...c, course: form.course, schedule: form.date, time: form.time, description: form.description, studio: form.studio } : c));
     setSelected(null);
     setForm({ course: '', date: '', time: '', description: '', studio: STUDIOS[0] });
   };
 
   const handleSelectForEdit = (i) => {
     setSelected(i);
-    setForm({ course: courses[i].course, date: courses[i].schedule, time: courses[i].time, description: '', studio: STUDIOS[0] });
+    setForm({ course: courses[i].course, date: courses[i].schedule, time: courses[i].time, description: courses[i].description || '', studio: courses[i].studio || STUDIOS[0] });
   };
 
   const handleDelete = () => {
-    if (selected === null) return;
+    if (selected === null || selected === undefined) return;
     setCourses(courses.filter((_, i) => i !== selected));
     setSelected(null);
     setForm({ course: '', date: '', time: '', description: '', studio: STUDIOS[0] });
@@ -201,19 +202,24 @@ const VendorPanel = () => {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-left px-4 py-2 font-semibold text-gray-700">Message</th>
-                <th className="text-left px-4 py-2 font-semibold text-gray-700">Date</th>
+                <th className="text-left px-4 py-2 font-semibold text-gray-700">Datetime</th>
+                <th className="text-left px-4 py-2 font-semibold text-gray-700">Content</th>
               </tr>
             </thead>
             <tbody>
               {notifications.map((n, i) => {
                 const isSelected = selectedNotif === i;
                 const isFlagged = flaggedNotifs.has(i);
-                const rowClass = isSelected ? 'bg-orange-100' : isFlagged ? 'bg-yellow-50' : i % 2 === 1 ? 'bg-gray-50' : '';
+                const rowClass = isSelected ? 'bg-orange-100' : i % 2 === 1 ? 'bg-gray-50' : '';
                 return (
                   <tr key={i} onClick={() => setSelectedNotif(i)} className={`cursor-pointer ${rowClass} hover:bg-orange-50`}>
-                    <td className={`px-4 py-2 ${isFlagged ? 'font-medium text-yellow-800' : 'text-gray-600'}`}>{n.message}</td>
-                    <td className={`px-4 py-2 whitespace-nowrap ${isFlagged ? 'font-medium text-yellow-800' : 'text-gray-600'}`}>{n.date}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-gray-600">{n.datetime}</td>
+                    <td className="px-4 py-2 text-gray-600">
+                      <span className="flex items-center justify-between">
+                        <span>{n.content}</span>
+                        {isFlagged && <span className="text-red-500 text-xs ml-2">🚩</span>}
+                      </span>
+                    </td>
                   </tr>
                 );
               })}

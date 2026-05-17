@@ -6,13 +6,19 @@ import axiosInstance from '../axiosConfig';
 import { getCourseName } from '../utils/courseNames';
 
 const INITIAL_NOTIFICATIONS = [
-  { id: 'MSG-001', content: 'Your booking for CLS-101 is confirmed.' },
-  { id: 'MSG-002', content: 'Reminder: Power Yoga tomorrow at 7:00 AM.' },
-  { id: 'MSG-003', content: 'Class CLS-089 location changed to Studio B.' },
-  { id: 'MSG-004', content: 'Monthly membership renewed successfully.' },
-  { id: 'MSG-005', content: 'New class added: Dance Cardio on Mar 29.' },
-  { id: 'MSG-006', content: "Kevin's Gym will be closed on Apr 1 (holiday)." },
+  { datetime: 'Mar 23 · 9:00 AM',  content: 'Your booking for C-001 is confirmed.' },
+  { datetime: 'Mar 23 · 10:30 AM', content: 'Reminder: Power Yoga tomorrow at 7:00 AM.' },
+  { datetime: 'Mar 22 · 2:15 PM',  content: 'Class C-003 location changed to Studio B.' },
+  { datetime: 'Mar 22 · 4:00 PM',  content: 'Monthly membership renewed successfully.' },
+  { datetime: 'Mar 21 · 11:00 AM', content: 'New class added: Dance Cardio on Mar 29.' },
+  { datetime: 'Mar 21 · 3:45 PM',  content: "Kevin's Gym will be closed on Apr 1 (holiday)." },
 ];
+
+const formatDatetime = (iso) => {
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
+    ' · ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+};
 
 const formatTime = (iso) => {
   const d = new Date(iso);
@@ -34,8 +40,8 @@ const MemberPanel = () => {
   const [bookingsLoading, setBookingsLoading] = useState(false);
 
   const notifications = liveNotifications.length > 0
-    ? liveNotifications.map((n, i) => ({
-        id: `MSG-${String(i + 1).padStart(3, '0')}`,
+    ? liveNotifications.map((n) => ({
+        datetime: n.createdAt ? formatDatetime(n.createdAt) : '—',
         content: n.message,
       }))
     : INITIAL_NOTIFICATIONS;
@@ -118,16 +124,16 @@ const MemberPanel = () => {
     <div className="min-h-screen bg-gym-cream">
       {/* Hero */}
       <div className="px-8 py-5 border-b border-gray-200">
-        <h1 className="text-2xl font-semibold text-gray-800">Member Panel</h1>
+        <h1 className="text-2xl font-semibold text-gray-800">Gym Member Panel</h1>
       </div>
 
       {/* Three-column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 px-8 py-8">
 
-        {/* User Profile */}
+        {/* Member Profile */}
         <div className="bg-white border border-gray-300 rounded-lg overflow-hidden">
           <div className="bg-gray-100 border-b border-gray-300 px-4 py-2 text-sm font-medium text-gray-700">
-            User Profile
+            Member Profile
           </div>
           <div className="p-4 space-y-2">
             <div className="flex items-center gap-2">
@@ -214,8 +220,8 @@ const MemberPanel = () => {
                     onClick={() => setSelectedBooking(i === selectedBooking ? null : i)}
                     className={`cursor-pointer ${selectedBooking === i ? 'bg-orange-100' : i % 2 === 1 ? 'bg-gray-50' : ''} hover:bg-orange-50`}
                   >
-                    <td className="px-4 py-2 text-teal-600">{b.classId}</td>
-                    <td className="px-4 py-2 text-teal-600">{getCourseName(b.classId, b.name)}</td>
+                    <td className="px-4 py-2 text-gray-800">{b.classId}</td>
+                    <td className="px-4 py-2 text-gray-800">{getCourseName(b.classId, b.name)}</td>
                     <td className="px-4 py-2 text-gray-600">{b.classroom}</td>
                     <td className="px-4 py-2 text-gray-600">{formatTime(b.scheduledAt)}</td>
                   </tr>
@@ -256,7 +262,7 @@ const MemberPanel = () => {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-left px-4 py-2 font-semibold text-gray-700">Message ID</th>
+                <th className="text-left px-4 py-2 font-semibold text-gray-700">Datetime</th>
                 <th className="text-left px-4 py-2 font-semibold text-gray-700">Content</th>
               </tr>
             </thead>
@@ -266,8 +272,8 @@ const MemberPanel = () => {
                 const isFlagged = flaggedNotifs.has(i);
                 const rowClass = isSelected ? 'bg-orange-100' : i % 2 === 1 ? 'bg-gray-50' : '';
                 return (
-                  <tr key={msg.id} onClick={() => setSelectedNotif(i)} className={`cursor-pointer ${rowClass} hover:bg-orange-50`}>
-                    <td className="px-4 py-2 whitespace-nowrap text-gray-600">{msg.id}</td>
+                  <tr key={i} onClick={() => setSelectedNotif(i)} className={`cursor-pointer ${rowClass} hover:bg-orange-50`}>
+                    <td className="px-4 py-2 whitespace-nowrap text-gray-600">{msg.datetime}</td>
                     <td className="px-4 py-2 text-gray-600">
                       <span className="flex items-center justify-between">
                         <span>{msg.content}</span>

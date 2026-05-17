@@ -13,8 +13,8 @@ const Navbar = () => {
   };
 
   const homeRoute = user?.role === 'admin' ? '/admin'
-    : user?.role === 'vendor' ? '/vendor-panel'
-    : user ? '/member-panel'
+    : user?.role === 'vendor' ? '/vendor'
+    : user ? '/member'
     : '/';
 
   return (

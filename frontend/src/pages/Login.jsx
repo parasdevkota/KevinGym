@@ -15,8 +15,8 @@ const Login = () => {
       login(response.data);
       const { role } = response.data;
       if (role === 'admin') navigate('/admin');
-      else if (role === 'vendor') navigate('/vendor-panel');
-      else navigate('/member-panel');
+      else if (role === 'vendor') navigate('/vendor');
+      else navigate('/member');
     } catch (error) {
       alert('Login failed. Please try again.');
     }

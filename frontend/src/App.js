@@ -23,9 +23,9 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/member-panel" element={<PrivateRoute><MemberPanel /></PrivateRoute>} />
+        <Route path="/member" element={<PrivateRoute><MemberPanel /></PrivateRoute>} />
         <Route path="/admin" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
-        <Route path="/vendor-panel" element={<PrivateRoute><VendorPanel /></PrivateRoute>} />
+        <Route path="/vendor" element={<PrivateRoute><VendorPanel /></PrivateRoute>} />
         <Route path="/class-booking" element={<PrivateRoute><ClassBookingPanel /></PrivateRoute>} />
         <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
         <Route path="/tasks" element={<PrivateRoute><Tasks /></PrivateRoute>} />

@@ -76,7 +76,7 @@ const ClassBookingPanel = () => {
     const cls = available[selectedAvailable];
     try {
       const res = await axiosInstance.put(`/api/bookings/${rescheduleId}`, { newGymClassId: cls._id }, authHeader);
-      navigate('/member-panel');
+      navigate('/member');
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to reschedule.');
     }
