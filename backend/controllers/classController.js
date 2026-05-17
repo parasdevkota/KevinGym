@@ -12,6 +12,7 @@ const getClasses = async (req, res) => {
     const formatted = classes.map((c) => ({
       _id: c._id,
       classId: c.classId,
+      name: c.name,
       classroom: c.classroom,
       scheduledAt: c.scheduledAt,
       capacity: c.capacity,

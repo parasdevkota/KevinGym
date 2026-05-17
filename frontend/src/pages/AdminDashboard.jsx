@@ -140,8 +140,7 @@ const AdminDashboard = () => {
               </button>
               <button
                 onClick={handleSave}
-                disabled={!selected}
-                className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50"
               >
                 Save
               </button>

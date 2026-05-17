@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../axiosConfig';
+import { getCourseName } from '../utils/courseNames';
 
 const formatTime = (iso) => {
   const d = new Date(iso);
@@ -119,7 +120,8 @@ const ClassBookingPanel = () => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className={thClass}>Class ID</th>
+                  <th className={thClass}>Course ID</th>
+                  <th className={thClass}>Course Name</th>
                   <th className={thClass}>Classroom</th>
                   <th className={thClass}>Time</th>
                 </tr>
@@ -131,7 +133,8 @@ const ClassBookingPanel = () => {
                     onClick={() => setSelectedBooked(i === selectedBooked ? null : i)}
                     className={`cursor-pointer ${selectedBooked === i ? 'bg-green-50' : i % 2 === 1 ? 'bg-gray-50' : ''} hover:bg-green-50`}
                   >
-                    <td className={tdClass}>{b.classId}</td>
+                    <td className="px-4 py-2 text-teal-600">{b.classId}</td>
+                    <td className="px-4 py-2 text-teal-600">{getCourseName(b.classId, b.name)}</td>
                     <td className={tdClass}>{b.classroom}</td>
                     <td className={tdClass}>{formatTime(b.scheduledAt)}</td>
                   </tr>
@@ -144,8 +147,7 @@ const ClassBookingPanel = () => {
             <div className="flex gap-2 mt-4">
               <button
                 onClick={handleCancel}
-                disabled={selectedBooked === null}
-                className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50"
               >
                 Cancel Booking
               </button>
@@ -169,7 +171,8 @@ const ClassBookingPanel = () => {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-100">
-                <th className={thClass}>Class ID</th>
+                <th className={thClass}>Course ID</th>
+                <th className={thClass}>Course Name</th>
                 <th className={thClass}>Classroom</th>
                 <th className={thClass}>Time</th>
               </tr>
@@ -183,7 +186,8 @@ const ClassBookingPanel = () => {
                     onClick={() => setSelectedAvailable(origIdx === selectedAvailable ? null : origIdx)}
                     className={`cursor-pointer ${selectedAvailable === origIdx ? 'bg-green-50' : i % 2 === 1 ? 'bg-gray-50' : ''} hover:bg-green-50`}
                   >
-                    <td className={tdClass}>{c.classId}</td>
+                    <td className="px-4 py-2 text-teal-600">{c.classId}</td>
+                    <td className="px-4 py-2 text-teal-600">{getCourseName(c.classId, c.name)}</td>
                     <td className={tdClass}>{c.classroom}</td>
                     <td className={tdClass}>{formatTime(c.scheduledAt)}</td>
                   </tr>
@@ -198,16 +202,14 @@ const ClassBookingPanel = () => {
             {rescheduleId ? (
               <button
                 onClick={handleReschedule}
-                disabled={selectedAvailable === null}
-                className="px-5 py-1.5 bg-gym-green text-white rounded text-sm font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-5 py-1.5 bg-gym-green text-white rounded text-sm font-medium hover:opacity-90"
               >
                 Reschedule
               </button>
             ) : (
               <button
                 onClick={handleBook}
-                disabled={selectedAvailable === null}
-                className="px-5 py-1.5 bg-gym-green text-white rounded text-sm font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-5 py-1.5 bg-gym-green text-white rounded text-sm font-medium hover:opacity-90"
               >
                 Book Class
               </button>

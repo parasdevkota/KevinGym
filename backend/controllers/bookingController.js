@@ -10,6 +10,7 @@ const getMyBookings = async (req, res) => {
     const formatted = bookings.map((b) => ({
       _id: b._id,
       classId: b.gymClass.classId,
+      name: b.gymClass.name,
       classroom: b.gymClass.classroom,
       scheduledAt: b.gymClass.scheduledAt,
       gymClassId: b.gymClass._id,
@@ -39,6 +40,7 @@ const createBooking = async (req, res) => {
     res.status(201).json({
       _id: booking._id,
       classId: booking.gymClass.classId,
+      name: booking.gymClass.name,
       classroom: booking.gymClass.classroom,
       scheduledAt: booking.gymClass.scheduledAt,
       gymClassId: booking.gymClass._id,
@@ -89,6 +91,7 @@ const rescheduleBooking = async (req, res) => {
     res.json({
       _id: booking._id,
       classId: booking.gymClass.classId,
+      name: booking.gymClass.name,
       classroom: booking.gymClass.classroom,
       scheduledAt: booking.gymClass.scheduledAt,
       gymClassId: booking.gymClass._id,

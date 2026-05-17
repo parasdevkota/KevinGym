@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import axiosInstance from '../axiosConfig';
+import { getCourseName } from '../utils/courseNames';
 
 const INITIAL_NOTIFICATIONS = [
   { id: 'MSG-001', content: 'Your booking for CLS-101 is confirmed.' },
@@ -201,7 +202,8 @@ const MemberPanel = () => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="text-left px-4 py-2 font-semibold text-gray-700">Class ID</th>
+                  <th className="text-left px-4 py-2 font-semibold text-gray-700">Course ID</th>
+                  <th className="text-left px-4 py-2 font-semibold text-gray-700">Course Name</th>
                   <th className="text-left px-4 py-2 font-semibold text-gray-700">Classroom</th>
                   <th className="text-left px-4 py-2 font-semibold text-gray-700">Time</th>
                 </tr>
@@ -213,7 +215,8 @@ const MemberPanel = () => {
                     onClick={() => setSelectedBooking(i === selectedBooking ? null : i)}
                     className={`cursor-pointer ${selectedBooking === i ? 'bg-green-50' : i % 2 === 1 ? 'bg-gray-50' : ''} hover:bg-green-50`}
                   >
-                    <td className="px-4 py-2 text-gray-600">{b.classId}</td>
+                    <td className="px-4 py-2 text-teal-600">{b.classId}</td>
+                    <td className="px-4 py-2 text-teal-600">{getCourseName(b.classId, b.name)}</td>
                     <td className="px-4 py-2 text-gray-600">{b.classroom}</td>
                     <td className="px-4 py-2 text-gray-600">{formatTime(b.scheduledAt)}</td>
                   </tr>
@@ -227,15 +230,13 @@ const MemberPanel = () => {
           <div className="flex gap-2 p-4 border-t border-gray-200">
             <button
               onClick={handleReschedule}
-              disabled={selectedBooking === null}
-              className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50"
             >
               Reschedule
             </button>
             <button
               onClick={handleCancelBooking}
-              disabled={selectedBooking === null}
-              className="px-4 py-1.5 border border-red-400 rounded text-sm text-red-500 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-4 py-1.5 border border-red-400 rounded text-sm text-red-500 hover:bg-red-50"
             >
               Cancel Booking
             </button>
@@ -264,11 +265,16 @@ const MemberPanel = () => {
               {notifications.map((msg, i) => {
                 const isSelected = selectedNotif === i;
                 const isFlagged = flaggedNotifs.has(i);
-                const rowClass = isSelected ? 'bg-blue-50' : isFlagged ? 'bg-yellow-50' : i % 2 === 1 ? 'bg-gray-50' : '';
+                const rowClass = isSelected ? 'bg-blue-50' : i % 2 === 1 ? 'bg-gray-50' : '';
                 return (
                   <tr key={msg.id} onClick={() => setSelectedNotif(i)} className={`cursor-pointer ${rowClass} hover:bg-blue-50`}>
-                    <td className={`px-4 py-2 whitespace-nowrap ${isFlagged ? 'font-medium text-yellow-800' : 'text-gray-600'}`}>{msg.id}</td>
-                    <td className={`px-4 py-2 ${isFlagged ? 'font-medium text-yellow-800' : 'text-gray-600'}`}>{msg.content}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-gray-600">{msg.id}</td>
+                    <td className="px-4 py-2 text-gray-600">
+                      <span className="flex items-center justify-between">
+                        <span>{msg.content}</span>
+                        {isFlagged && <span className="text-red-500 text-xs ml-2">🚩</span>}
+                      </span>
+                    </td>
                   </tr>
                 );
               })}
