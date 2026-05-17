@@ -102,11 +102,6 @@ const ClassBookingPanel = () => {
         <h1 className="text-2xl font-semibold text-gray-800">
           {rescheduleId ? 'Reschedule Class' : 'Class Booking'}
         </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          {rescheduleId
-            ? 'Select a new class from the available list, then click Reschedule.'
-            : 'Browse and book our weekly classes below. Questions? Call us at (555) 012-3456.'}
-        </p>
       </div>
 
       {/* Two-column layout */}

@@ -119,7 +119,6 @@ const MemberPanel = () => {
       {/* Hero */}
       <div className="px-8 py-5 border-b border-gray-200">
         <h1 className="text-2xl font-semibold text-gray-800">Member Panel</h1>
-        <p className="text-sm text-gray-500 mt-1">View your profile, manage booked classes, and check your notifications.</p>
       </div>
 
       {/* Three-column layout */}

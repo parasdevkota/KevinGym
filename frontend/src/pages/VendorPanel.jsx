@@ -90,7 +90,6 @@ const VendorPanel = () => {
       {/* Hero */}
       <div className="px-8 py-5 border-b border-gray-200">
         <h1 className="text-2xl font-semibold text-gray-800">Course Vendor Panel</h1>
-        <p className="text-sm text-gray-500 mt-1">Add new courses, manage your published listings, and view notifications.</p>
       </div>
 
       {/* Three-column layout */}

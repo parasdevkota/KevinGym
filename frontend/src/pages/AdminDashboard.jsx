@@ -89,7 +89,6 @@ const AdminDashboard = () => {
       {/* Hero */}
       <div className="px-8 py-5 border-b border-gray-200">
         <h1 className="text-2xl font-semibold text-gray-800">Administrator Panel</h1>
-        <p className="text-sm text-gray-500 mt-1">Manage users, view existing members, and send system notifications.</p>
       </div>
 
       {/* Three-column layout */}
