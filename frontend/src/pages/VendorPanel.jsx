@@ -98,7 +98,7 @@ const VendorPanel = () => {
 
         {/* Add / Edit Course */}
         <div className="bg-white border border-gray-300 rounded-lg overflow-hidden">
-          <div className={cardHeader}>Create Course</div>
+          <div className={cardHeader}>Gym Course</div>
           <div className="p-4 space-y-3">
             <input
               type="text"
@@ -170,7 +170,7 @@ const VendorPanel = () => {
               {courses.map((c, i) => (
                 <tr
                   key={i}
-                  onClick={() => handleSelectForEdit(i)}
+                  onClick={() => setSelected(i === selected ? null : i)}
                   className={`cursor-pointer ${selected === i ? 'bg-orange-100' : i % 2 === 1 ? 'bg-gray-50' : ''} hover:bg-orange-50`}
                 >
                   <td className="px-4 py-2 text-gray-600">{c.course}</td>

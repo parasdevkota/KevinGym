@@ -39,14 +39,18 @@ const MemberPanel = () => {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [bookingsLoading, setBookingsLoading] = useState(false);
 
-  const notifications = liveNotifications.length > 0
-    ? liveNotifications.map((n) => ({
-        datetime: n.createdAt ? formatDatetime(n.createdAt) : '—',
-        content: n.message,
-      }))
-    : INITIAL_NOTIFICATIONS;
+  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
   const [selectedNotif, setSelectedNotif] = useState(null);
   const [flaggedNotifs, setFlaggedNotifs] = useState(new Set());
+
+  useEffect(() => {
+    if (liveNotifications.length > 0) {
+      setNotifications(liveNotifications.map((n) => ({
+        datetime: n.createdAt ? formatDatetime(n.createdAt) : '—',
+        content: n.message,
+      })));
+    }
+  }, [liveNotifications]);
 
   const authHeader = { headers: { Authorization: `Bearer ${user?.token}` } };
 
@@ -302,6 +306,7 @@ const MemberPanel = () => {
             <button
               onClick={() => {
                 if (selectedNotif === null) return;
+                setNotifications(prev => prev.filter((_, i) => i !== selectedNotif));
                 setFlaggedNotifs(prev => {
                   const next = new Set();
                   prev.forEach(idx => { if (idx < selectedNotif) next.add(idx); else if (idx > selectedNotif) next.add(idx - 1); });

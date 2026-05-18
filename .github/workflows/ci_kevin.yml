@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - development/kevinbai
   pull_request:
     branches:
       - main
@@ -39,7 +40,7 @@ jobs:
         run: |
           cd ~/kevingym
           git fetch origin
-          git reset --hard origin/main
+          git reset --hard origin/${{ github.ref_name }}
           npm run install-all
           npm run build --prefix frontend
           pm2 restart kevingym
