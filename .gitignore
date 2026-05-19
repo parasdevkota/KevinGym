@@ -18,5 +18,7 @@ CLAUDE.md
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
-
+start_t3medium.tf
+.terraform/
+terraform*
+.terraform*
