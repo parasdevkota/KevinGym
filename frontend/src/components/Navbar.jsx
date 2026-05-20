@@ -21,7 +21,6 @@ const Navbar = () => {
     <nav className="bg-gym-green text-white px-8 py-3 flex justify-between items-center">
       <div>
         <Link to={homeRoute} className="text-xl font-bold tracking-wide">Kevin's Gym</Link>
-        <p className="text-xs text-green-200 mt-0.5">Family Fitness at Brisbane</p>
       </div>
       <div className="flex items-center gap-6 text-sm">
         {user ? (
