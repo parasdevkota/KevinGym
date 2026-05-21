@@ -3,6 +3,7 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const gymEvents = require('../events/gymEvents');
+const ROLES = require('../constants/roles');
 
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
@@ -14,7 +15,7 @@ const registerUser = async (req, res) => {
         const userExists = await User.findOne({ email });
         if (userExists) return res.status(400).json({ message: 'User already exists' });
 
-        const assignedRole = role === 'vendor' ? 'vendor' : 'member';
+        const assignedRole = role === ROLES.VENDOR ? ROLES.VENDOR : ROLES.MEMBER;
         const user = await User.create({ name, email, password, role: assignedRole });
         gymEvents.emit('userRegistered', { name: user.name, email: user.email, role: user.role });
         res.status(201).json({ id: user.id, name: user.name, email: user.email, role: user.role, token: generateToken(user.id) });

@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const gymEvents = require('../events/gymEvents');
+const ROLES = require('../constants/roles');
 
 const getUsers = async (req, res) => {
   try {
@@ -17,7 +18,7 @@ const createUser = async (req, res) => {
     if (userExists) return res.status(400).json({ message: 'User already exists' });
 
     const name = `${firstName} ${lastName}`.trim();
-    const user = await User.create({ name, email, password: 'qwertyui', role: role || 'member' });
+    const user = await User.create({ name, email, password: 'qwertyui', role: role || ROLES.MEMBER });
     gymEvents.emit('userCreated', { name: user.name, email: user.email, role: user.role });
     res.status(201).json({ id: user.id, name: user.name, email: user.email, role: user.role });
   } catch (error) {
