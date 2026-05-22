@@ -35,7 +35,7 @@ describe('Get Users Function Test', () => {
     const users = [{ id: 'u1', name: 'Admin', email: 'admin@gym.com', role: 'admin' }];
     sinon.stub(User, 'find').returns({ select: sinon.stub().resolves(users) });
 
-    const req = {};
+    const req = { query: {} };
     const res = createMockRes();
 
     await getUsers(req, res);
@@ -48,7 +48,7 @@ describe('Get Users Function Test', () => {
   it('TC-021: Should return 500 if a database error occurs', async () => {
     sinon.stub(User, 'find').throws(new Error('Database connection failed'));
 
-    const req = {};
+    const req = { query: {} };
     const res = createMockRes();
 
     await getUsers(req, res);
