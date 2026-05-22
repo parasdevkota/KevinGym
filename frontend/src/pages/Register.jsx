@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../axiosConfig';
 
 const Register = () => {
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'member' });
+  const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', password: '', role: 'member' });
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -21,13 +21,22 @@ const Register = () => {
     <div className="min-h-screen bg-gym-cream flex items-center justify-center px-4">
       <form onSubmit={handleSubmit} className="bg-white w-full max-w-md p-6 shadow-md rounded-lg">
         <h1 className="text-2xl font-semibold mb-5 text-center text-gray-800">Create Account</h1>
-        <input
-          type="text"
-          placeholder="Full Name"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full mb-3 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-gym-green"
-        />
+        <div className="flex gap-2 mb-3">
+          <input
+            type="text"
+            placeholder="First Name"
+            value={formData.firstName}
+            onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+            className="w-1/2 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-gym-green"
+          />
+          <input
+            type="text"
+            placeholder="Last Name"
+            value={formData.lastName}
+            onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+            className="w-1/2 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-gym-green"
+          />
+        </div>
         <input
           type="email"
           placeholder="Email"

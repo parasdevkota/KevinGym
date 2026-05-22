@@ -24,7 +24,8 @@ const createNotification = async (req, res) => {
 
 const deleteNotification = async (req, res) => {
   try {
-    await Notification.findByIdAndDelete(req.params.id);
+    const notification = await Notification.findByIdAndDelete(req.params.id);
+    if (!notification) return res.status(404).json({ message: 'Notification not found' });
     res.json({ message: 'Notification deleted' });
   } catch (error) {
     res.status(500).json({ message: error.message });

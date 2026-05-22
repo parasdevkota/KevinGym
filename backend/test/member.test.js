@@ -5,26 +5,15 @@ const chaiHttp = require('chai-http');
 const sinon = require('sinon');
 const jwt = require('jsonwebtoken');
 
-process.env.JWT_SECRET = 'test_secret';
-
 const app = require('../server');
 const User = require('../models/User');
+const { findByIdResult } = require('./testSetup');
 
 chai.use(chaiHttp);
 const expect = chai.expect;
 
-// A fake member user passed through the auth middleware
 const memberUser = { id: 'member001', name: 'John Doe', email: 'john@test.com', role: 'member' };
-
-// Generate a real JWT so the protect middleware accepts it
 const token = jwt.sign({ id: memberUser.id }, process.env.JWT_SECRET);
-
-// Returns a Promise that also exposes .select() for middleware chaining
-function findByIdResult(data) {
-  const p = Promise.resolve(data);
-  p.select = () => Promise.resolve(data);
-  return p;
-}
 
 describe('Member Panel API', () => {
   afterEach(() => sinon.restore());
@@ -32,7 +21,6 @@ describe('Member Panel API', () => {
   // ── View Profile (Read) ──────────────────────────────────────────────────────
 
   it('TC11 - View Profile: should return member profile with status 200', async () => {
-    // First findById = middleware, second = getProfile controller
     const findByIdStub = sinon.stub(User, 'findById');
     findByIdStub.onFirstCall().callsFake(() => findByIdResult(memberUser));
     findByIdStub.onSecondCall().resolves(memberUser);
@@ -48,7 +36,7 @@ describe('Member Panel API', () => {
 
   it('TC12 - View Profile: should return 401 if no token provided', async () => {
     const res = await chai.request(app)
-      .get('/api/auth/profile'); // no Authorization header
+      .get('/api/auth/profile');
 
     expect(res).to.have.status(401);
   });
@@ -62,7 +50,6 @@ describe('Member Panel API', () => {
       save: sinon.stub().resolves(updatedUser),
     };
 
-    // First findById = middleware, second = updateUserProfile controller
     const findByIdStub = sinon.stub(User, 'findById');
     findByIdStub.onFirstCall().callsFake(() => findByIdResult(memberUser));
     findByIdStub.onSecondCall().resolves(userWithSave);
@@ -77,7 +64,6 @@ describe('Member Panel API', () => {
   });
 
   it('TC14 - Update Profile: should return 404 if member account not found', async () => {
-    // First findById = middleware (passes), second = controller returns null (not found)
     const findByIdStub = sinon.stub(User, 'findById');
     findByIdStub.onFirstCall().callsFake(() => findByIdResult(memberUser));
     findByIdStub.onSecondCall().resolves(null);

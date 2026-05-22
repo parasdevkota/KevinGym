@@ -5,30 +5,16 @@ const chaiHttp = require('chai-http');
 const sinon = require('sinon');
 const jwt = require('jsonwebtoken');
 
-process.env.JWT_SECRET = 'test_secret';
-
 const app = require('../server');
 const User = require('../models/User');
 const { createUser } = require('../controllers/adminController');
+const { findByIdResult } = require('./testSetup');
 
 chai.use(chaiHttp);
 const expect = chai.expect;
 
-// A fake admin user passed through the auth middleware
 const adminUser = { id: 'admin001', name: 'Admin', email: 'admin@gym.com', role: 'admin' };
-
-// Generate a real JWT so the protect middleware accepts it
 const token = jwt.sign({ id: adminUser.id }, process.env.JWT_SECRET);
-
-// The protect middleware calls User.findById(id).select('-password').
-// Some controllers also call User.findById(id) without .select().
-// This helper returns a Promise that also exposes a .select() method,
-// so it works in both cases.
-function findByIdResult(data) {
-  const p = Promise.resolve(data);
-  p.select = () => Promise.resolve(data);
-  return p;
-}
 
 describe('Administrator Panel API', () => {
   afterEach(() => sinon.restore());
@@ -51,7 +37,7 @@ describe('Administrator Panel API', () => {
 
   it('TC06 - Create User: should create a new user and return 201', async () => {
     sinon.stub(User, 'findById').callsFake(() => findByIdResult(adminUser));
-    sinon.stub(User, 'findOne').resolves(null); // email not taken
+    sinon.stub(User, 'findOne').resolves(null);
     sinon.stub(User, 'create').resolves({
       id: 'u002', name: 'Jane Smith', email: 'jane@test.com', role: 'member',
     });
@@ -67,24 +53,18 @@ describe('Administrator Panel API', () => {
   });
 
   it('TC07 - Create User: should return 500 if a database error occurs', async () => {
-    // Stub User.findOne to throw a DB error
     sinon.stub(User, 'findOne').throws(new Error('DB Error'));
 
-    // Mock request data
     const req = {
       body: { firstName: 'Jane', lastName: 'Smith', email: 'jane@test.com', role: 'member' },
     };
-
-    // Mock response object
     const res = {
       status: sinon.stub().returnsThis(),
       json: sinon.spy(),
     };
 
-    // Call function directly (no HTTP layer needed)
     await createUser(req, res);
 
-    // Assertions
     expect(res.status.calledWith(500)).to.be.true;
   });
 
@@ -96,7 +76,6 @@ describe('Administrator Panel API', () => {
       save: sinon.stub().resolves({ id: 'u002', name: 'New Name', email: 'jane@test.com', role: 'member' }),
     };
 
-    // First findById call = middleware (needs .select), second = controller (direct await)
     const findByIdStub = sinon.stub(User, 'findById');
     findByIdStub.onFirstCall().callsFake(() => findByIdResult(adminUser));
     findByIdStub.onSecondCall().resolves(targetUser);
@@ -114,7 +93,7 @@ describe('Administrator Panel API', () => {
 
   it('TC09 - Delete User: should delete user and return success message', async () => {
     sinon.stub(User, 'findById').callsFake(() => findByIdResult(adminUser));
-    sinon.stub(User, 'findByIdAndDelete').resolves({ id: 'u002' }); // user found and deleted
+    sinon.stub(User, 'findByIdAndDelete').resolves({ id: 'u002' });
 
     const res = await chai.request(app)
       .delete('/api/admin/users/u002')
