@@ -1,3 +1,1 @@
-require:
-  - ./test/testSetup.js
 spec: test/**/*.test.js

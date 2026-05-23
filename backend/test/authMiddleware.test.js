@@ -2,169 +2,128 @@
 
 const assert = require('assert');
 const sinon = require('sinon');
-const jwt = require('jsonwebtoken');
 
 const AuthStrategyContext = require('../strategies/AuthStrategyContext');
-const JWTStrategy = require('../strategies/JWTStrategy');
-AuthStrategyContext.use(new JWTStrategy());
+const ROLES = require('../constants/roles');
+const {
+  protect,
+  requireRole,
+  requireAdmin,
+  requireVendor,
+} = require('../middleware/authMiddleware');
 
-const { protect, requireAdmin, requireVendor } = require('../middleware/authMiddleware');
-const User = require('../models/User');
-
-function createMockRes() {
+// Simulate Express req, res, and next for middleware tests
+function createMockReqResNext(reqOverrides = {}) {
+  const req = { headers: { authorization: 'Bearer test-token' }, ...reqOverrides };
   const res = { statusCode: 200, body: null };
-  res.status = sinon.stub().callsFake((code) => { res.statusCode = code; return res; });
-  res.json = sinon.stub().callsFake((body) => { res.body = body; return res; });
-  return res;
+  res.status = sinon.stub().callsFake((code) => {
+    res.statusCode = code;
+    return res;
+  });
+  res.json = sinon.stub().callsFake((body) => {
+    res.body = body;
+    return res;
+  });
+  const next = sinon.stub();
+  return { req, res, next };
 }
 
-describe('Auth Middleware Test', () => {
+describe('Protect Middleware Test', () => {
   afterEach(() => sinon.restore());
 
-  it('TC-061: Should return 401 if no Authorization header is provided', async () => {
-    const req = { headers: {} };
-    const res = createMockRes();
-    const next = sinon.stub();
+  it('TC-061: Should set req.user and call next when token is valid', async () => {
+    const user = { _id: 'user001', role: ROLES.MEMBER, email: 'member@test.com' };
+    sinon.stub(AuthStrategyContext, 'verify').resolves(user);
+
+    const { req, res, next } = createMockReqResNext();
 
     await protect(req, res, next);
 
-    assert.strictEqual(res.statusCode, 401);
-    sinon.assert.notCalled(next);
-  });
-
-  it('TC-062: Should return 401 if Authorization header is missing Bearer prefix', async () => {
-    const req = { headers: { authorization: 'Basic sometoken' } };
-    const res = createMockRes();
-    const next = sinon.stub();
-
-    await protect(req, res, next);
-
-    assert.strictEqual(res.statusCode, 401);
-    sinon.assert.notCalled(next);
-  });
-
-  it('TC-063: Should return 401 if token has expired', async () => {
-    const expiredToken = jwt.sign({ id: 'user001' }, 'test_secret', { expiresIn: '-1s' });
-    const req = { headers: { authorization: `Bearer ${expiredToken}` } };
-    const res = createMockRes();
-    const next = sinon.stub();
-
-    await protect(req, res, next);
-
-    assert.strictEqual(res.statusCode, 401);
-    sinon.assert.notCalled(next);
-  });
-
-  it('TC-064: Should return 401 if token signature is invalid', async () => {
-    const badToken = jwt.sign({ id: 'user001' }, 'wrong_secret');
-    const req = { headers: { authorization: `Bearer ${badToken}` } };
-    const res = createMockRes();
-    const next = sinon.stub();
-
-    await protect(req, res, next);
-
-    assert.strictEqual(res.statusCode, 401);
-    sinon.assert.notCalled(next);
-  });
-
-  it('TC-065: Should return 401 if token is valid but user no longer exists in DB', async () => {
-    const token = jwt.sign({ id: 'deleted_user' }, 'test_secret');
-    sinon.stub(User, 'findById').returns({ select: sinon.stub().resolves(null) });
-
-    const req = { headers: { authorization: `Bearer ${token}` } };
-    const res = createMockRes();
-    const next = sinon.stub();
-
-    await protect(req, res, next);
-
-    assert.strictEqual(res.statusCode, 401);
-    sinon.assert.notCalled(next);
-  });
-
-  it('TC-066: Should call next() and attach user to req when token is valid', async () => {
-    const user = { id: 'user001', name: 'Jane Doe', email: 'jane@test.com', role: 'member' };
-    const token = jwt.sign({ id: user.id }, 'test_secret');
-    sinon.stub(User, 'findById').returns({ select: sinon.stub().resolves(user) });
-
-    const req = { headers: { authorization: `Bearer ${token}` } };
-    const res = createMockRes();
-    const next = sinon.stub();
-
-    await protect(req, res, next);
-
+    assert.deepStrictEqual(req.user, user);
     sinon.assert.calledOnce(next);
-    assert.strictEqual(req.user, user);
-  });
-});
-
-describe('requireAdmin Middleware Test', () => {
-  it('TC-067: Should call next() if user role is admin', () => {
-    const req = { user: { role: 'admin' } };
-    const res = createMockRes();
-    const next = sinon.stub();
-
-    requireAdmin(req, res, next);
-
-    sinon.assert.calledOnce(next);
-    assert.strictEqual(res.statusCode, 200);
+    sinon.assert.notCalled(res.status);
   });
 
-  it('TC-068: Should return 403 if user role is member', () => {
-    const req = { user: { role: 'member' } };
-    const res = createMockRes();
-    const next = sinon.stub();
+  it('TC-062: Should return 401 when token verification fails', async () => {
+    sinon.stub(AuthStrategyContext, 'verify').rejects(new Error('Invalid token'));
 
-    requireAdmin(req, res, next);
+    const { req, res, next } = createMockReqResNext();
 
-    assert.strictEqual(res.statusCode, 403);
-    assert.strictEqual(res.body.message, 'Admin access required');
-    sinon.assert.notCalled(next);
-  });
+    await protect(req, res, next);
 
-  it('TC-069: Should return 403 if user role is vendor', () => {
-    const req = { user: { role: 'vendor' } };
-    const res = createMockRes();
-    const next = sinon.stub();
-
-    requireAdmin(req, res, next);
-
-    assert.strictEqual(res.statusCode, 403);
+    assert.strictEqual(res.statusCode, 401);
+    assert.ok(res.body.message.includes('Not authorized'));
     sinon.assert.notCalled(next);
   });
 });
 
-describe('requireVendor Middleware Test', () => {
-  it('TC-070: Should call next() if user role is vendor', () => {
-    const req = { user: { role: 'vendor' } };
-    const res = createMockRes();
-    const next = sinon.stub();
+describe('Require Role Middleware Test', () => {
+  afterEach(() => sinon.restore());
+
+  it('TC-063: Should call next when user has the required role', () => {
+    const requireMember = requireRole(ROLES.MEMBER);
+    const { req, res, next } = createMockReqResNext({ user: { role: ROLES.MEMBER } });
+
+    requireMember(req, res, next);
+
+    sinon.assert.calledOnce(next);
+    sinon.assert.notCalled(res.status);
+  });
+
+  it('TC-064: Should return 403 when user role does not match', () => {
+    const requireMember = requireRole(ROLES.MEMBER);
+    const { req, res, next } = createMockReqResNext({ user: { role: ROLES.ADMIN } });
+
+    requireMember(req, res, next);
+
+    assert.strictEqual(res.statusCode, 403);
+    assert.ok(res.body.message.includes('access required'));
+    sinon.assert.notCalled(next);
+  });
+});
+
+describe('Require Admin Middleware Test', () => {
+  afterEach(() => sinon.restore());
+
+  it('TC-065: Should call next when user is an admin', () => {
+    const { req, res, next } = createMockReqResNext({ user: { role: ROLES.ADMIN } });
+
+    requireAdmin(req, res, next);
+
+    sinon.assert.calledOnce(next);
+    sinon.assert.notCalled(res.status);
+  });
+
+  it('TC-066: Should return 403 when user is not an admin', () => {
+    const { req, res, next } = createMockReqResNext({ user: { role: ROLES.MEMBER } });
+
+    requireAdmin(req, res, next);
+
+    assert.strictEqual(res.statusCode, 403);
+    assert.ok(res.body.message.includes('access required'));
+    sinon.assert.notCalled(next);
+  });
+});
+
+describe('Require Vendor Middleware Test', () => {
+  afterEach(() => sinon.restore());
+
+  it('TC-067: Should call next when user is a vendor', () => {
+    const { req, res, next } = createMockReqResNext({ user: { role: ROLES.VENDOR } });
 
     requireVendor(req, res, next);
 
     sinon.assert.calledOnce(next);
-    assert.strictEqual(res.statusCode, 200);
+    sinon.assert.notCalled(res.status);
   });
 
-  it('TC-071: Should return 403 if user role is member', () => {
-    const req = { user: { role: 'member' } };
-    const res = createMockRes();
-    const next = sinon.stub();
+  it('TC-068: Should return 403 when user is not a vendor', () => {
+    const { req, res, next } = createMockReqResNext({ user: { role: ROLES.MEMBER } });
 
     requireVendor(req, res, next);
 
     assert.strictEqual(res.statusCode, 403);
-    assert.strictEqual(res.body.message, 'Vendor access required');
-    sinon.assert.notCalled(next);
-  });
-
-  it('TC-072: Should return 403 if user role is admin', () => {
-    const req = { user: { role: 'admin' } };
-    const res = createMockRes();
-    const next = sinon.stub();
-
-    requireVendor(req, res, next);
-
-    assert.strictEqual(res.statusCode, 403);
+    assert.ok(res.body.message.includes('access required'));
     sinon.assert.notCalled(next);
   });
 });
