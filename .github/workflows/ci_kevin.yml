@@ -5,7 +5,7 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-  workflow_dispatch: # <-- THIS adds a manual "Run workflow" button in GitHub
+  workflow_dispatch:
 
 jobs:
   build-and-test:
@@ -28,3 +28,6 @@ jobs:
 
       - name: Build Frontend Application
         run: npm run build --prefix frontend
+
+        name: Build Frontend Application
+        run: CI=false npm run build --prefix frontend
