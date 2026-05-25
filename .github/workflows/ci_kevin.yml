@@ -27,7 +27,4 @@ jobs:
         run: npm install --prefix frontend
 
       - name: Build Frontend Application
-        run: npm run build --prefix frontend
-
-        name: Build Frontend Application
         run: CI=false npm run build --prefix frontend
